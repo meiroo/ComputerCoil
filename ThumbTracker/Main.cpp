@@ -15,9 +15,9 @@ int main(){
     
     std::vector<cv::Point2f> screen;
     screen.push_back(cv::Point2f(0, 0));
-    screen.push_back(cv::Point2f(0, 480));
-    screen.push_back(cv::Point2f(640, 480));
-    screen.push_back(cv::Point2f(640, 0));
+    screen.push_back(cv::Point2f(0, 30));
+    screen.push_back(cv::Point2f(40, 30));
+    screen.push_back(cv::Point2f(40, 0));
     
     cv::Mat templateImg ;//set first captured image as template image
     cap >> templateImg;
@@ -28,6 +28,7 @@ int main(){
     map.addKeyFrame(templateThumb);
     int currentKeyFrameIndex = 0;
     
+    cv::Mat pose;
     
 
     while (true)
@@ -49,11 +50,11 @@ int main(){
         Thumbnail compThumb(img);
         tracker.setCompareThumb(compThumb);
         
-        cv::Mat pose;
+        
         //tracking : find the transform between current image and template image
         cv::Mat currentKeyFrameImg = tracker.IteratePose(pose,finalScore);
         
-        cv::Scalar color = cv::Scalar(255, 255, 255); //white
+        cv::Scalar color = cv::Scalar(0, 0, 255); //red
         
         
         if(finalScore > 2.0e6){//tracking failed (the diffrence between current and template image is too large)
@@ -65,8 +66,9 @@ int main(){
             if(best != -1 && finalScore < 2.0e6){ //finally find it. the use it as tracking template
                 tracker.setTemplateThumb(*map.getKeyFrame(best));
                 currentKeyFrameIndex = best;
+                pose = cv::Mat();
             }else{ //nothing find
-                
+                pose = cv::Mat();
             }
         }else{  //tracking is OK, draw some information
 
@@ -76,7 +78,7 @@ int main(){
             for (size_t i = 0; i < screen.size(); ++i) {
                 cv::Point2f& r1 = trans[i % 4];
                 cv::Point2f& r2 = trans[(i + 1) % 4];
-                cv::line(img, r1 , r2 , color, 3, CV_AA);
+                cv::line(img, r1*16 , r2*16 , color, 3, CV_AA);
             }
             
             //draw thumbnail image
